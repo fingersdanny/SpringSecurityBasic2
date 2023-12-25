@@ -24,6 +24,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	/**
+	 *
+	 * Spring Security 버전 3.1.0 부터 모든 설정을 Lambda DSL로 하도록 변경..
+	 * http.csrf(htttpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
+	 */
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
