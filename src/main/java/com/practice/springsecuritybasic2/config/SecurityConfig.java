@@ -119,6 +119,14 @@ public class SecurityConfig {
 	// 	return new JdbcUserDetailsManager(dataSource);
 	// }
 
+	/**
+	 * Encoding = 단순한 변환 작업임 (다시 돌릴 수 있다.)
+	 * Encryption = 키를 포함한 암호화 작업 (비밀을 보장함 * 복호화를 통해서 돌릴 수 있음)
+	 * Hashing = 데이터를 해시 값으로 변환 시킴 (원본을 보지 않고도 값을 비교할 수 있음, 돌릴 수 없음)
+	 *
+	 * BCryptPasswordEncoder 는 매번 새로운 해시 값을 뱉는다.ㅋ
+	 */
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return NoOpPasswordEncoder.getInstance();
