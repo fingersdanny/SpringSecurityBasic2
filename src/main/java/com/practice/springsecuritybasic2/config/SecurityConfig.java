@@ -139,6 +139,8 @@ public class SecurityConfig {
 	 * 더 최신의 해싱 알고리즘을 사용할 수록 보안성은 올라가지만, 실제 어플리케이션 구동 과정 속에서 로그인 시간이 더
 	 * 늘어나거나 할 수 있다.
 	 * 이러한 이유로 BCryptPasswordEncoder가 자주 사용된다.
+	 *
+	 * BCryptPasswordEncoder를 쓰고 나면 DB에 암호화된 해시 값으로 저장된 상태로 비밀번호가 존재해야한다.
 	 */
 
 	@Bean
