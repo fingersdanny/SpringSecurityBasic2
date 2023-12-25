@@ -74,7 +74,9 @@ public class SecurityConfig {
 		 *  UserDetails는 한번 만들어지고 나면 Setter가 닫혀 있어서 수정이 불가함
 		 *  이는 framework 설계 상 임의로 유저에 대한 정보를 바꾸지 않게 하기 위해서
 		 *  지금과 같이 구현할 경우 InMemoryUserDetailsManager가 실제 구현체를 담당하며
+		 *  UserDetailsService 내부의
 		 *  loadUserByUsername(String Username) 메서드를 통해서 AuthenticationProvider를 통해 제공 받은 인증를 통해서 작동함
+		 *  UserDetailsService -> UserDetailsManager를 통해서 유저 정보를 가져올 수 있다.
 		 */
 		UserDetails admin = User.withUsername("admin")
 			.username("admin")
