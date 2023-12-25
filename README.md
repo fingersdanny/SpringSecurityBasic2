@@ -5,4 +5,7 @@
   * OTP Authentication
 * 각각의 Authentication Provider가 필요하다.
 
-### Authentication Provider
+### CORS (CROSS-ORIGIN RESOURCE SHARING)
+
+### CSRF (CROSS-SITE REQUEST FORGERY)
+
