@@ -6,8 +6,11 @@ import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,13 +27,15 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
 		/**
 		* 1. 특정 요청 모두 허가 및 권한 부여
 		 */
 		http.authorizeHttpRequests((requests) -> requests
 				.requestMatchers(
 					"/notices",
-					"/contact")
+					"/contact",
+					"/register")
 			.permitAll()
 				.requestMatchers(
 					"/myAccount",
@@ -107,12 +112,12 @@ public class SecurityConfig {
 
 	/**
 	 * 실제 클라우드 환경의 (AWS RDS)에 연결하고 JdbcUserDetailsManager를 통해서 관리
-	 * @param dataSource
+	 // * @param dataSource
 	 */
-	@Bean
-	public UserDetailsService userDetailsService(DataSource dataSource) {
-		return new JdbcUserDetailsManager(dataSource);
-	}
+	// @Bean
+	// public UserDetailsService userDetailsService(DataSource dataSource) {
+	// 	return new JdbcUserDetailsManager(dataSource);
+	// }
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
