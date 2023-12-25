@@ -129,7 +129,16 @@ public class SecurityConfig {
 	 * Encryption = 키를 포함한 암호화 작업 (비밀을 보장함 * 복호화를 통해서 돌릴 수 있음)
 	 * Hashing = 데이터를 해시 값으로 변환 시킴 (원본을 보지 않고도 값을 비교할 수 있음, 돌릴 수 없음)
 	 *
-	 * BCryptPasswordEncoder 는 매번 새로운 해시 값을 뱉는다.ㅋ
+	 * BCryptPasswordEncoder 는 매번 새로운 해시 값을 뱉는다.
+	 *
+	 * Security에서 다양한 PasswordEncoder 구현체를 제공하기 때문에 Spring Security를 사용하는 이점이 있음
+	 * 이 중에서 NoOpPasswordEncoder나 StandardPasswordEncoder등의 구현체는 실제로 운영환경에서 쓰지 말아야함
+	 * 왜냐면 이 구현체들은 운영환경에서 사용할 정도로 높은 보안을 제공해주지 않기 때문에,,
+	 *
+	 * Argon2PasswordEncoder;
+	 * 더 최신의 해싱 알고리즘을 사용할 수록 보안성은 올라가지만, 실제 어플리케이션 구동 과정 속에서 로그인 시간이 더
+	 * 늘어나거나 할 수 있다.
+	 * 이러한 이유로 BCryptPasswordEncoder가 자주 사용된다.
 	 */
 
 	@Bean
