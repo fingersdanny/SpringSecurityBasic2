@@ -1,12 +1,15 @@
 package com.practice.springsecuritybasic2.repository;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.practice.springsecuritybasic2.model.Customer;
 
-public interface CustomerRepository extends JpaRepository<Customer, Integer> {
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-	List<Customer> findByEmail(String email);
+import java.util.List;
+
+@Repository
+public interface CustomerRepository extends CrudRepository<Customer, Long> {
+
+    List<Customer> findByEmail(String email);
+    
 }

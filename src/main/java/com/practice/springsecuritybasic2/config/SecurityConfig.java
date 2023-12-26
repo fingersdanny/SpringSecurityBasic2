@@ -46,7 +46,8 @@ public class SecurityConfig {
 					"/myAccount",
 					"/myBalance",
 					"/myLoans",
-					"/myCards")
+					"/myCards",
+					"/user")
 			.authenticated());
 
 		/**
