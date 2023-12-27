@@ -22,3 +22,12 @@
 ### Filter chain
 * Spring Security에는 기본적으로 여러가지 체인이 있고 하나의 체인이 다른 체인을 invoke하는 형식으로 되어 있음
 * response나 request를 가로채서 처리하고 없애는 데 있음
+
+### 메서드 레벨 보안
+* ``@PreAuthorize`` 와 ``@PostAuthorize`` SpeL (Spring Expression Language)를 통해서 메서드 별로 지정해줄 수 있음
+* ``@PreAuthorize``는 메서드 실행 전에 권한 확인
+* ``@PostAuthorize``는 메서드 실행 후에 권한 확인
+* 내부적으로 AOP를 통해서 메서드 레벨 보안을 구현한다.
+* ``@PreFilter`` 와 ``@PostFilter``를 통해서 필터를 메서드 레벨에 적용할 수 있다.
+
+### OAuth2

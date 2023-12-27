@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.AbstractConfiguredSecurityBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,12 +26,16 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.practice.springsecuritybasic2.filter.AuthoritiesLogginAfterFilter;
+import com.practice.springsecuritybasic2.filter.AuthoritiesLoggingAtFilter;
 import com.practice.springsecuritybasic2.filter.CsrfCookieFilter;
+import com.practice.springsecuritybasic2.filter.JWTTokenGeneratorFilter;
+import com.practice.springsecuritybasic2.filter.JWTTokenValidatorFilter;
 import com.practice.springsecuritybasic2.filter.RequestValidationBeforeFilter;
 
 @Configuration
-@EnableWebMvc
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 	/**
 	 *
@@ -44,24 +49,17 @@ public class SecurityConfig {
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.securityContext(securityContextfConfigurer -> securityContextfConfigurer
-				.requireExplicitSave(false))
-			// 세션 사용 X
-			.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		http.cors(corsConfigurer -> corsConfigurer.configurationSource(new CorsConfig()));
-		http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer
-				.csrfTokenRequestHandler(new CsrfConfig().requestAttributeHandler())
-				.ignoringRequestMatchers("/contact", "/register")
-				/** withHttpOnlyFalse 를 쓰는 이유
-				 *  쿠키 기반의 세션을 설정한다고 할 때 (OAuth나 JWT 토큰을 사용하지 않는다고 치면)
-				 *  csrfTokenRepository에 'XSRF-TOKEN'이라는 쿠키에 csrf 토큰을 유지합니다.
-				 *
-				 */
-
-				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-			.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
-
+			.requireExplicitSave(false));
+		// 세션 사용 X
+		http.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		http.cors(corsConfigurer -> corsConfigurer.configurationSource(new CorsConfig()))
+			// .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+			.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
+			.addFilterAfter(new AuthoritiesLogginAfterFilter(), BasicAuthenticationFilter.class)
+			.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+			.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class);
 		/**
 		 * 1. 특정 요청 모두 허가 및 권한 부여
 		 */
@@ -95,7 +93,6 @@ public class SecurityConfig {
 		http.httpBasic(withDefaults());
 		return http.build();
 	}
-
 
 	/**
 	 * Session 사용 예시
@@ -153,7 +150,6 @@ public class SecurityConfig {
 	// 	http.httpBasic(withDefaults());
 	// 	return http.build();
 	// }
-
 
 	// @Bean
 	// public InMemoryUserDetailsManager userDetailsService() {
