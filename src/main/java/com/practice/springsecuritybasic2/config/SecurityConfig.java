@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.AbstractConfiguredSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,8 +21,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import com.practice.springsecuritybasic2.filter.CsrfCookieFilter;
+import com.practice.springsecuritybasic2.filter.RequestValidationBeforeFilter;
 
 @Configuration
+@EnableWebMvc
 @EnableWebSecurity
 public class SecurityConfig {
 	/**
@@ -30,24 +38,45 @@ public class SecurityConfig {
 	 * http.csrf(htttpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
 	 */
 
+	/**
+	 * JWT 기반 filterChain
+	 */
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
+		http.securityContext(securityContextfConfigurer -> securityContextfConfigurer
+				.requireExplicitSave(false))
+			// 세션 사용 X
+			.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		http.cors(corsConfigurer -> corsConfigurer.configurationSource(new CorsConfig()));
+		http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer
+				.csrfTokenRequestHandler(new CsrfConfig().requestAttributeHandler())
+				.ignoringRequestMatchers("/contact", "/register")
+				/** withHttpOnlyFalse 를 쓰는 이유
+				 *  쿠키 기반의 세션을 설정한다고 할 때 (OAuth나 JWT 토큰을 사용하지 않는다고 치면)
+				 *  csrfTokenRepository에 'XSRF-TOKEN'이라는 쿠키에 csrf 토큰을 유지합니다.
+				 *
+				 */
+
+				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+			.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
+
 		/**
-		* 1. 특정 요청 모두 허가 및 권한 부여
+		 * 1. 특정 요청 모두 허가 및 권한 부여
 		 */
 		http.authorizeHttpRequests((requests) -> requests
-				.requestMatchers(
-					"/notices",
-					"/contact",
-					"/register")
+			.requestMatchers(
+				"/notices",
+				"/contact",
+				"/register")
 			.permitAll()
-				.requestMatchers(
-					"/myAccount",
-					"/myBalance",
-					"/myLoans",
-					"/myCards",
-					"/user")
+			.requestMatchers(
+				"/myAccount",
+				"/myBalance",
+				"/myLoans",
+				"/myCards",
+				"/user")
 			.authenticated());
 
 		/**
@@ -66,6 +95,64 @@ public class SecurityConfig {
 		http.httpBasic(withDefaults());
 		return http.build();
 	}
+
+
+	/**
+	 * Session 사용 예시
+	 */
+	// @Bean
+	// SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	// 	http.securityContext(securityContextfConfigurer -> securityContextfConfigurer
+	// 		.requireExplicitSave(false))
+	// 		.sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
+	// 			.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
+	// 	http.cors(corsConfigurer -> corsConfigurer.configurationSource(new CorsConfig()));
+	// 	http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer
+	// 			.csrfTokenRequestHandler(new CsrfConfig().requestAttributeHandler())
+	// 			.ignoringRequestMatchers("/contact", "/register")
+	// 			/** withHttpOnlyFalse 를 쓰는 이유
+	// 			 *  쿠키 기반의 세션을 설정한다고 할 때 (OAuth나 JWT 토큰을 사용하지 않는다고 치면)
+	// 			 *  csrfTokenRepository에 'XSRF-TOKEN'이라는 쿠키에 csrf 토큰을 유지합니다.
+	// 			 *
+	// 			 */
+	//
+	// 			.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+	// 		.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+	// 		.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
+	//
+	// 	/**
+	// 	* 1. 특정 요청 모두 허가 및 권한 부여
+	// 	 */
+	// 	http.authorizeHttpRequests((requests) -> requests
+	// 			.requestMatchers(
+	// 				"/notices",
+	// 				"/contact",
+	// 				"/register")
+	// 		.permitAll()
+	// 			.requestMatchers(
+	// 				"/myAccount",
+	// 				"/myBalance",
+	// 				"/myLoans",
+	// 				"/myCards",
+	// 				"/user")
+	// 		.authenticated());
+	//
+	// 	/**
+	// 	 * 2. 모든 요청 거부 처리
+	// 	 */
+	// 	// http.authorizeHttpRequests(requests -> requests
+	// 	// 	.anyRequest().denyAll());
+	//
+	// 	/**
+	// 	 * 3. 모든 요청 허가
+	// 	 */
+	// 	// http.authorizeHttpRequests(requests -> requests
+	// 	// 	.anyRequest().permitAll());
+	//
+	// 	http.formLogin(withDefaults());
+	// 	http.httpBasic(withDefaults());
+	// 	return http.build();
+	// }
 
 
 	// @Bean
